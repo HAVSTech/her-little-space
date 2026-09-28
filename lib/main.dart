@@ -825,6 +825,7 @@ class CycleChartPainter extends CustomPainter {
   final List<double> values;
   final List<String> labels;
   final double average;
+  final int? hoverIndex;
   final Color lineColor;
   final Color gridColor;
   final Color textColor;
@@ -833,6 +834,7 @@ class CycleChartPainter extends CustomPainter {
     required this.values,
     required this.labels,
     required this.average,
+    required this.hoverIndex,
     required this.lineColor,
     required this.gridColor,
     required this.textColor,
@@ -1098,6 +1100,7 @@ class CycleChartPainter extends CustomPainter {
   bool shouldRepaint(covariant CycleChartPainter oldDelegate) {
     return oldDelegate.values != values ||
         oldDelegate.average != average ||
+        oldDelegate.hoverIndex != hoverIndex ||
         oldDelegate.labels != labels;
   }
 }
