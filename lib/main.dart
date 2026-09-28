@@ -505,7 +505,7 @@ class ChartPainter extends CustomPainter {
       canvas.drawCircle(Offset(x,y),4,dots);
     }
     canvas.drawPath(path,line);
-    final tp=TextPainter(text:TextSpan(text:'last ${values.last.toInt()} days',style:const TextStyle(fontSize:11,color:AppColors.muted)),textDirection:TextDirection.ltr)..layout();
+    final tp=TextPainter(text:TextSpan(text:'last ${values.last.toInt()} days',style:const TextStyle(fontSize:11,color:AppColors.muted)),textDirection:TextDirection.values.first)..layout();
     tp.paint(canvas,Offset(left,size.height-16));
   }
   @override bool shouldRepaint(covariant ChartPainter oldDelegate)=>oldDelegate.values!=values;
