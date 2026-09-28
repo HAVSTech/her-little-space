@@ -95,6 +95,8 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void tick() => notifyListeners();
+
   Future<void> setMood(String? value) async {
     mood = value;
     await prefs.saveMood(value);
@@ -141,7 +143,7 @@ class _AppState extends State<App> {
   void initState() {
     super.initState();
     timer = Timer.periodic(const Duration(minutes: 1), (_) {
-      widget.state.notifyListeners();
+      widget.state.tick();
     });
   }
   @override
