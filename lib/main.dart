@@ -743,7 +743,7 @@ class HistoryPage extends StatelessWidget {
                   ],
                 ),
               ),
-              if (c != state.cycles.last)
+              if (state.cycles.indexOf(c) < state.cycles.length - 1)
                 Padding(
                   padding:const EdgeInsets.only(left:10),
                   child:Container(
@@ -772,7 +772,7 @@ class HistoryPage extends StatelessWidget {
                         Text(
                           dayDiff(
                             c.startDate,
-                            state.cycles[state.cycles.indexOf(c)-1].startDate,
+                            state.cycles[state.cycles.indexOf(c)+1].startDate,
                           ).toString()+' days',
                           style:const TextStyle(
                             fontSize:10,
