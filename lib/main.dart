@@ -20,6 +20,10 @@ DateTime today() {
 String keyOf(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
 String longDate(DateTime d) => DateFormat('d MMMM yyyy').format(d);
 
+// Keep scrollable content clear of the floating bottom navigation on every page.
+double pageBottomPadding(BuildContext context) =>
+    MediaQuery.paddingOf(context).bottom + 104;
+
 String formatStoredTime(String? raw) {
   if (raw == null || raw.isEmpty) return 'Start time not recorded';
   try {
@@ -699,7 +703,7 @@ class HistoryPage extends StatelessWidget {
   Widget build(BuildContext context)=>RefreshIndicator(
     onRefresh:state.reload,
     child:ListView(
-      padding:const EdgeInsets.fromLTRB(20,18,20,32),
+      padding:EdgeInsets.fromLTRB(20,18,20,pageBottomPadding(context)),
       children:[
         const Text('CYCLE HISTORY',style:TextStyle(fontSize:10,letterSpacing:1.5,fontWeight:FontWeight.w800,color:AppColors.rose)),
         const SizedBox(height:6),
@@ -1291,7 +1295,7 @@ class UsPage extends StatelessWidget {
   const UsPage({super.key,required this.state});
   @override
   Widget build(BuildContext context)=>ListView(
-    padding:const EdgeInsets.fromLTRB(20,18,20,36),
+    padding:EdgeInsets.fromLTRB(20,18,20,pageBottomPadding(context)),
     children:[
       const Text('A LITTLE MORE OF US',style:TextStyle(fontSize:10,letterSpacing:1.5,fontWeight:FontWeight.w800,color:AppColors.rose)),
       const SizedBox(height:6),
