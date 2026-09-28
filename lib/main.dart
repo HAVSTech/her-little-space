@@ -827,8 +827,8 @@ class HistoryPage extends StatelessWidget {
                         const SizedBox(height:2),
                         Text(
                           dayDiff(
-                            c.startDate,
                             state.cycles[state.cycles.indexOf(c)+1].startDate,
+                            c.startDate,
                           ).toString()+' days',
                           style:const TextStyle(
                             fontSize:10,
