@@ -397,41 +397,97 @@ class TodayPage extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              Container(
+                width: 42,
+                height: 42,
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: AppColors.roseSoft,
+                  borderRadius: BorderRadius.circular(13),
+                  border: Border.all(
+                    color: AppColors.rose.withValues(alpha: .14),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(9),
+                  child: Image.asset(
+                    'assets/images/app_logo.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(
+                      Icons.favorite_rounded,
+                      color: AppColors.rose,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 11),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _greeting(),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        letterSpacing: 1.5,
+                    const Text(
+                      "Harini's Little Space",
+                      style: TextStyle(
+                        fontSize: 12,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.rose,
+                        letterSpacing: -.15,
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      DateFormat('EEEE, d MMMM').format(today()),
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                    const SizedBox(height: 2),
+                    const Text(
+                      'a private rhythm, made gently',
+                      style: TextStyle(
+                        fontSize: 9,
                         color: AppColors.muted,
+                        letterSpacing: .05,
                       ),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: state.toggleDark,
-                icon: Icon(
-                  state.dark
-                      ? Icons.light_mode_outlined
-                      : Icons.dark_mode_outlined,
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor.withValues(alpha: .72),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: AppColors.line.withValues(alpha: .75),
+                  ),
+                ),
+                child: IconButton(
+                  visualDensity: VisualDensity.compact,
+                  onPressed: state.toggleDark,
+                  icon: Icon(
+                    state.dark
+                        ? Icons.light_mode_outlined
+                        : Icons.dark_mode_outlined,
+                    size: 18,
+                  ),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 26),
+          Text(
+            _greeting(),
+            style: const TextStyle(
+              fontSize: 10,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.w800,
+              color: AppColors.rose,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            DateFormat('EEEE, d MMMM').format(today()),
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: AppColors.muted,
+            ),
           ),
           const SizedBox(height: 34),
           RichText(
