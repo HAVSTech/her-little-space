@@ -19,6 +19,21 @@ DateTime today() {
 }
 String keyOf(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
 String longDate(DateTime d) => DateFormat('d MMMM yyyy').format(d);
+
+String formatStoredTime(String? raw) {
+  if (raw == null || raw.isEmpty) return 'Start time not recorded';
+  try {
+    final parsed = DateFormat('HH:mm').parse(raw);
+    return DateFormat('h:mm a').format(parsed);
+  } catch (_) {
+    try {
+      final parsed = DateTime.parse('2000-01-01T$raw');
+      return DateFormat('h:mm a').format(parsed);
+    } catch (_) {
+      return raw;
+    }
+  }
+}
 int dayDiff(DateTime a, DateTime b) => DateTime(b.year,b.month,b.day).difference(DateTime(a.year,a.month,a.day)).inDays;
 
 int averageCycle(List<PeriodCycle> cycles) {
@@ -227,7 +242,7 @@ class _FloatingBottomNav extends StatelessWidget {
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: 22, sigmaY: 22),
           child: Container(
-            height: 68,
+            height: 72,
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: .12),
@@ -237,12 +252,14 @@ class _FloatingBottomNav extends StatelessWidget {
                 width: 1,
               ),
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
                 colors: [
-                  Colors.white.withValues(alpha: .20),
-                  Colors.white.withValues(alpha: .07),
+                  Colors.white.withValues(alpha: .22),
+                  Colors.white.withValues(alpha: .10),
+                  Colors.white.withValues(alpha: .05),
                 ],
+                stops: const [0, .42, 1],
               ),
               boxShadow: [
                 BoxShadow(
@@ -277,14 +294,18 @@ class _FloatingBottomNav extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: selected
-                              ? Colors.white.withValues(alpha: .94)
-                              : Colors.transparent,
+                              ? Colors.white.withValues(alpha: .72)
+                              : Colors.white.withValues(alpha: .015),
                           borderRadius: BorderRadius.circular(28),
                           border: selected
                               ? Border.all(
-                                  color: Colors.white.withValues(alpha: .75),
+                                  color: Colors.white.withValues(alpha: .82),
+                                  width: 1,
                                 )
-                              : null,
+                              : Border.all(
+                                  color: Colors.white.withValues(alpha: .03),
+                                  width: 1,
+                                ),
                           boxShadow: selected
                               ? [
                                   BoxShadow(
@@ -530,7 +551,7 @@ class CycleRow extends StatelessWidget {
       const SizedBox(width:12),
       Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
         Text(longDate(cycle.startDate),style:const TextStyle(fontWeight:FontWeight.w600)),
-        Text(cycle.startTime==null?'Start time not recorded':'Started at '+cycle.startTime!,style:const TextStyle(fontSize:12,color:AppColors.muted)),
+        Text(cycle.startTime==null?'Start time not recorded':'Started at '+formatStoredTime(cycle.startTime),style:const TextStyle(fontSize:12,color:AppColors.muted)),
       ])),
       if(cycle.endDate!=null)Text((dayDiff(cycle.startDate,cycle.endDate!)+1).toString()+' days',style:const TextStyle(fontSize:12,color:AppColors.muted)),
     ]),
@@ -576,7 +597,43 @@ class HistoryPage extends StatelessWidget {
         const SizedBox(height:18),
         Row(children:[
           Expanded(child:Text('All logged cycles',style:Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight:FontWeight.w700))),
-          IconButton(onPressed:()=>showPeriodDialog(context,state),icon:const Icon(Icons.add_circle_outline)),
+          Tooltip(
+            message: 'Log a period',
+            child:Material(
+              color:Colors.transparent,
+              child:InkWell(
+                customBorder:const CircleBorder(),
+                onTap:()=>showPeriodDialog(context,state),
+                child:Container(
+                  width:42,
+                  height:42,
+                  decoration:BoxDecoration(
+                    color:AppColors.roseSoft,
+                    shape:BoxShape.circle,
+                    border:Border.all(color:AppColors.rose.withValues(alpha:.28)),
+                    boxShadow:[
+                      BoxShadow(
+                        color:AppColors.rose.withValues(alpha:.10),
+                        blurRadius:12,
+                        offset:const Offset(0,4),
+                      ),
+                    ],
+                  ),
+                  child:const Stack(
+                    alignment:Alignment.center,
+                    children:[
+                      Icon(Icons.add_rounded,color:AppColors.rose,size:24),
+                      Positioned(
+                        right:7,
+                        top:7,
+                        child:Icon(Icons.favorite,size:7,color:AppColors.rose),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ]),
         ...state.cycles.map((c)=>Dismissible(
           key:ValueKey(c.id),
@@ -599,7 +656,7 @@ class HistoryPage extends StatelessWidget {
               const SizedBox(width:12),
               Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
                 Text(longDate(c.startDate),style:const TextStyle(fontWeight:FontWeight.w700)),
-                Text(c.startTime==null?'Start time not recorded':'Started at '+c.startTime!,style:const TextStyle(fontSize:12,color:AppColors.muted)),
+                Text(c.startTime==null?'Start time not recorded':'Started at '+formatStoredTime(c.startTime),style:const TextStyle(fontSize:12,color:AppColors.muted)),
               ])),
               if(c.endDate!=null)Text((dayDiff(c.startDate,c.endDate!)+1).toString()+' d',style:const TextStyle(color:AppColors.muted)),
             ]),
@@ -622,25 +679,59 @@ class HistoryPage extends StatelessWidget {
   }
 }
 
-class HistoryChart extends StatelessWidget {
+class HistoryChart extends StatefulWidget {
   final AppState state;
 
   const HistoryChart({super.key, required this.state});
 
   @override
-  Widget build(BuildContext context) {
-    final ordered = state.cycles.take(10).toList().reversed.toList();
-    final values = <double>[];
+  State<HistoryChart> createState() => _HistoryChartState();
+}
 
-    for (var i = 0; i < ordered.length - 1; i++) {
-      values.add(
-        dayDiff(ordered[i].startDate, ordered[i + 1].startDate).toDouble(),
+class _HistoryChartState extends State<HistoryChart> {
+  int? hoverIndex;
+
+  List<PeriodCycle> get ordered =>
+      widget.state.cycles.take(10).toList().reversed.toList();
+
+  List<double> get values {
+    final result = <double>[];
+    final items = ordered;
+    for (var i = 0; i < items.length - 1; i++) {
+      result.add(
+        dayDiff(items[i].startDate, items[i + 1].startDate).toDouble(),
       );
     }
+    return result;
+  }
 
-    if (values.isEmpty) return const SizedBox.shrink();
+  void updateHover(Offset position, double width) {
+    final count = values.length;
+    if (count == 0) return;
+    const left = 32.0;
+    const right = 10.0;
+    final chartWidth = width - left - right;
+    if (chartWidth <= 0) return;
 
-    final average = values.reduce((a, b) => a + b) / values.length;
+    final raw = ((position.dx - left) / chartWidth) * (count - 1);
+    final index = raw.round().clamp(0, count - 1);
+
+    if (index != hoverIndex) {
+      setState(() => hoverIndex = index);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final items = ordered;
+    final data = values;
+    if (data.isEmpty) return const SizedBox.shrink();
+
+    final average = data.reduce((a, b) => a + b) / data.length;
+    final labels = items
+        .take(data.length)
+        .map((c) => DateFormat('MMM', 'en_IN').format(c.startDate))
+        .toList();
 
     return Container(
       padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
@@ -673,19 +764,28 @@ class HistoryChart extends StatelessWidget {
           const SizedBox(height: 20),
           SizedBox(
             height: 210,
-            child: CustomPaint(
-              painter: CycleChartPainter(
-                values: values,
-                labels: ordered
-                    .take(values.length)
-                    .map((c) => DateFormat('MMM', 'en_IN').format(c.startDate))
-                    .toList(),
-                average: average,
-                lineColor: AppColors.rose,
-                gridColor: AppColors.line,
-                textColor: AppColors.muted,
+            child: LayoutBuilder(
+              builder: (context, constraints) => MouseRegion(
+                cursor: SystemMouseCursors.click,
+                onHover: (event) => updateHover(event.localPosition, constraints.maxWidth),
+                onExit: (_) => setState(() => hoverIndex = null),
+                child: GestureDetector(
+                  onLongPressStart: (details) =>
+                      updateHover(details.localPosition, constraints.maxWidth),
+                  child: CustomPaint(
+                    painter: CycleChartPainter(
+                      values: data,
+                      labels: labels,
+                      average: average,
+                      hoverIndex: hoverIndex,
+                      lineColor: AppColors.rose,
+                      gridColor: AppColors.line,
+                      textColor: AppColors.muted,
+                    ),
+                    child: const SizedBox.expand(),
+                  ),
+                ),
               ),
-              child: const SizedBox.expand(),
             ),
           ),
           const SizedBox(height: 12),
@@ -886,9 +986,100 @@ class CycleChartPainter extends CustomPainter {
 
     canvas.drawPath(linePath, linePaint);
 
-    for (final point in points) {
-      canvas.drawCircle(point, 5, Paint()..color = Colors.white);
-      canvas.drawCircle(point, 3, Paint()..color = lineColor);
+    for (var i = 0; i < points.length; i++) {
+      final point = points[i];
+      if (i == hoverIndex) {
+        canvas.drawCircle(
+          point,
+          9,
+          Paint()..color = lineColor.withValues(alpha: .12),
+        );
+        canvas.drawCircle(
+          point,
+          6,
+          Paint()..color = Colors.white,
+        );
+        canvas.drawCircle(
+          point,
+          3.5,
+          Paint()..color = lineColor,
+        );
+      } else {
+        canvas.drawCircle(point, 5, Paint()..color = Colors.white);
+        canvas.drawCircle(point, 3, Paint()..color = lineColor);
+      }
+    }
+
+    if (hoverIndex != null &&
+        hoverIndex! >= 0 &&
+        hoverIndex! < points.length) {
+      final i = hoverIndex!;
+      final point = points[i];
+      final dayValue = values[i].round();
+      final month = labels[i];
+
+      final tooltipPainter = TextPainter(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: '$month  ·  ',
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            TextSpan(
+              text: '$dayValue days',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        textDirection: ui.TextDirection.ltr,
+      )..layout();
+
+      final tooltipWidth = tooltipPainter.width + 22;
+      final tooltipHeight = tooltipPainter.height + 14;
+      final tooltipX = (point.dx - tooltipWidth / 2)
+          .clamp(4.0, size.width - tooltipWidth - 4);
+      final tooltipY = (point.dy - tooltipHeight - 14).clamp(
+        2.0,
+        size.height - tooltipHeight - 2,
+      );
+
+      final tooltipRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          tooltipX,
+          tooltipY,
+          tooltipWidth,
+          tooltipHeight,
+        ),
+        const Radius.circular(12),
+      );
+
+      canvas.drawShadow(
+        Path()..addRRect(tooltipRect),
+        Colors.black.withValues(alpha: .14),
+        8,
+        true,
+      );
+
+      canvas.drawRRect(
+        tooltipRect,
+        Paint()..color = const Color(0xFF28232B),
+      );
+
+      tooltipPainter.paint(
+        canvas,
+        Offset(
+          tooltipX + 11,
+          tooltipY + (tooltipHeight - tooltipPainter.height) / 2,
+        ),
+      );
     }
 
     for (var i = 0; i < labels.length && i < points.length; i++) {
