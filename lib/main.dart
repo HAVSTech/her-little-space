@@ -7,6 +7,7 @@ import 'services/supabase_service.dart';
 import 'services/preferences_service.dart';
 import 'models/period_cycle.dart';
 import 'theme/app_theme.dart';
+import 'widgets/common.dart';
 
 const supabaseUrl = 'https://tyqnrqhhogbwjpwnmzvk.supabase.co';
 const supabasePublishableKey = 'sb_publishable_AZQid6LZmmBv-Hy8-_QjDg_HMwYT7Sp';
