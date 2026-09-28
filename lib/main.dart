@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/supabase_service.dart';
 import 'services/preferences_service.dart';
@@ -124,6 +125,7 @@ class AppState extends ChangeNotifier {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('en_IN');
   await Supabase.initialize(
     url: supabaseUrl,
     publishableKey: supabasePublishableKey,
@@ -219,84 +221,127 @@ class _FloatingBottomNav extends StatelessWidget {
     final bottom = MediaQuery.paddingOf(context).bottom;
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(22, 0, 22, bottom + 14),
-      child: Container(
-        height: 66,
-        padding: const EdgeInsets.all(7),
-        decoration: BoxDecoration(
-          color: const Color(0xFF15131A),
-          borderRadius: BorderRadius.circular(34),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: .16),
-              blurRadius: 28,
-              offset: const Offset(0, 12),
+      padding: EdgeInsets.fromLTRB(18, 0, 18, bottom + 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(36),
+        child: BackdropFilter(
+          filter: ui.ImageFilter.blur(sigmaX: 22, sigmaY: 22),
+          child: Container(
+            height: 68,
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: .12),
+              borderRadius: BorderRadius.circular(36),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: .30),
+                width: 1,
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: .20),
+                  Colors.white.withValues(alpha: .07),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: .18),
+                  blurRadius: 30,
+                  offset: const Offset(0, 12),
+                ),
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: .06),
+                  blurRadius: 8,
+                  offset: const Offset(0, -1),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          children: List.generate(items.length, (i) {
-            final selected = index == i;
-            final item = items[i];
+            child: Row(
+              children: List.generate(items.length, (i) {
+                final selected = index == i;
+                final item = items[i];
 
-            return Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () => onChanged(i),
-                child: Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: selected ? 18 : 14,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: selected ? Colors.white : Colors.transparent,
-                      borderRadius: BorderRadius.circular(26),
-                    ),
-                    child: AnimatedSize(
-                      duration: const Duration(milliseconds: 260),
-                      curve: Curves.easeOutCubic,
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 180),
-                            transitionBuilder: (child, animation) =>
-                                ScaleTransition(
-                              scale: animation,
-                              child: child,
-                            ),
-                            child: Icon(
-                              selected ? item.$2 : item.$1,
-                              key: ValueKey(selected),
-                              size: 19,
-                              color: selected
-                                  ? const Color(0xFF15131A)
-                                  : Colors.white70,
-                            ),
-                          ),
-                          if (selected) ...[
-                            const SizedBox(width: 7),
-                            Text(
-                              item.$3,
-                              style: const TextStyle(
-                                color: Color(0xFF15131A),
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
+                return Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onChanged(i),
+                    child: Center(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 320),
+                        curve: Curves.easeOutCubic,
+                        constraints: const BoxConstraints(minHeight: 50),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: selected ? 12 : 14,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? Colors.white.withValues(alpha: .94)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(28),
+                          border: selected
+                              ? Border.all(
+                                  color: Colors.white.withValues(alpha: .75),
+                                )
+                              : null,
+                          boxShadow: selected
+                              ? [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: .10),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : null,
+                        ),
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 280),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.center,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 180),
+                                transitionBuilder: (child, animation) =>
+                                    ScaleTransition(
+                                  scale: animation,
+                                  child: child,
+                                ),
+                                child: Icon(
+                                  selected ? item.$2 : item.$1,
+                                  key: ValueKey(selected),
+                                  size: 18,
+                                  color: selected
+                                      ? const Color(0xFF29252D)
+                                      : Colors.white.withValues(alpha: .88),
+                                ),
                               ),
-                            ),
-                          ],
-                        ],
+                              if (selected) ...[
+                                const SizedBox(width: 5),
+                                Text(
+                                  item.$3,
+                                  overflow: TextOverflow.clip,
+                                  softWrap: false,
+                                  style: const TextStyle(
+                                    color: Color(0xFF29252D),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -.1,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }),
+                );
+              }),
+            ),
+          ),
         ),
       ),
     );
