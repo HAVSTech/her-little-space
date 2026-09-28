@@ -369,6 +369,13 @@ class _FloatingBottomNav extends StatelessWidget {
   }
 }
 
+String _greeting() {
+  final hour = DateTime.now().hour;
+  if (hour < 12) return 'GOOD MORNING, THANGAME ✨';
+  if (hour < 17) return 'GOOD AFTERNOON, THANGAME ✨';
+  return 'GOOD EVENING, THANGAME ✨';
+}
+
 class TodayPage extends StatelessWidget {
   final AppState state;
   final VoidCallback openHistory;
@@ -389,28 +396,79 @@ class TodayPage extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
         children: [
-          Row(children: [
-            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('TODAY', style: TextStyle(fontSize:10,letterSpacing:1.5,fontWeight:FontWeight.w800,color:AppColors.rose)),
-              const SizedBox(height:4),
-              Text(DateFormat('EEEE, d MMMM').format(today()), style: const TextStyle(fontWeight:FontWeight.w600)),
-            ])),
-            IconButton(
-              onPressed: state.toggleDark,
-              icon: Icon(state.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _greeting(),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        letterSpacing: 1.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.rose,
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      DateFormat('EEEE, d MMMM').format(today()),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: state.toggleDark,
+                icon: Icon(
+                  state.dark
+                      ? Icons.light_mode_outlined
+                      : Icons.dark_mode_outlined,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 34),
+          RichText(
+            text: TextSpan(
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: -2.2,
+                    height: .98,
+                    color: AppColors.ink,
+                  ),
+              children: const [
+                TextSpan(text: 'Your body has a\n'),
+                TextSpan(
+                  text: 'rhythm.\n',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                TextSpan(
+                  text: 'Let’s move with it.',
+                  style: TextStyle(
+                    color: AppColors.rose,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-          ]),
-          const SizedBox(height:22),
-          Text(
-            latest == null ? 'Start your cycle log' : 'Your body, your rhythm.',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight:FontWeight.w700,letterSpacing:-.7),
           ),
-          const SizedBox(height:8),
+          const SizedBox(height: 18),
           const Text(
-            'A quiet place to keep track of your cycle, how you feel, and the little details that matter.',
-            style: TextStyle(color:AppColors.muted,height:1.55),
+            'A soft little space to notice your cycle, check in with yourself, and keep the everyday things that matter close.',
+            style: TextStyle(
+              color: AppColors.muted,
+              height: 1.65,
+              fontSize: 11,
+            ),
           ),
-          const SizedBox(height:18),
+          const SizedBox(height: 24),
           if (state.error != null) ErrorBanner(text: state.error!),
           if (latest == null)
             EmptyCard(onAdd: () => showPeriodDialog(context, state))
@@ -595,38 +653,48 @@ class HistoryPage extends StatelessWidget {
         const SizedBox(height:20),
         if(state.cycles.length>1)HistoryChart(state:state),
         const SizedBox(height:18),
-        Row(children:[
-          Expanded(child:Text('All logged cycles',style:Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight:FontWeight.w700))),
-          Tooltip(
-            message: 'Log a period',
+        Text(
+          'All logged cycles',
+          style:Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight:FontWeight.w700,
+            fontSize:18,
+            letterSpacing:-.3,
+          ),
+        ),
+        const SizedBox(height:12),
+        Center(
+          child:Tooltip(
+            message:'Log a period',
             child:Material(
               color:Colors.transparent,
               child:InkWell(
-                customBorder:const CircleBorder(),
+                borderRadius:BorderRadius.circular(10),
                 onTap:()=>showPeriodDialog(context,state),
                 child:Container(
-                  width:42,
-                  height:42,
+                  padding:const EdgeInsets.symmetric(horizontal:16,vertical:9),
                   decoration:BoxDecoration(
-                    color:AppColors.roseSoft,
-                    shape:BoxShape.circle,
-                    border:Border.all(color:AppColors.rose.withValues(alpha:.28)),
+                    color:AppColors.rose,
+                    borderRadius:BorderRadius.circular(10),
                     boxShadow:[
                       BoxShadow(
-                        color:AppColors.rose.withValues(alpha:.10),
-                        blurRadius:12,
-                        offset:const Offset(0,4),
+                        color:AppColors.rose.withValues(alpha:.18),
+                        blurRadius:14,
+                        offset:const Offset(0,6),
                       ),
                     ],
                   ),
-                  child:const Stack(
-                    alignment:Alignment.center,
+                  child:const Row(
+                    mainAxisSize:MainAxisSize.min,
                     children:[
-                      Icon(Icons.add_rounded,color:AppColors.rose,size:24),
-                      Positioned(
-                        right:7,
-                        top:7,
-                        child:Icon(Icons.favorite,size:7,color:AppColors.rose),
+                      Icon(Icons.add_rounded,color:Colors.white,size:14),
+                      SizedBox(width:6),
+                      Text(
+                        'Log period',
+                        style:TextStyle(
+                          color:Colors.white,
+                          fontSize:10,
+                          fontWeight:FontWeight.w800,
+                        ),
                       ),
                     ],
                   ),
@@ -634,7 +702,8 @@ class HistoryPage extends StatelessWidget {
               ),
             ),
           ),
-        ]),
+        ),
+        const SizedBox(height:14),
         ...state.cycles.map((c)=>Dismissible(
           key:ValueKey(c.id),
           direction:DismissDirection.endToStart,
@@ -654,11 +723,67 @@ class HistoryPage extends StatelessWidget {
             child:Row(children:[
               const Icon(Icons.calendar_today_outlined,size:18,color:AppColors.rose),
               const SizedBox(width:12),
-              Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[
-                Text(longDate(c.startDate),style:const TextStyle(fontWeight:FontWeight.w700)),
-                Text(c.startTime==null?'Start time not recorded':'Started at '+formatStoredTime(c.startTime),style:const TextStyle(fontSize:12,color:AppColors.muted)),
-              ])),
-              if(c.endDate!=null)Text((dayDiff(c.startDate,c.endDate!)+1).toString()+' d',style:const TextStyle(color:AppColors.muted)),
+              Expanded(
+                child:Column(
+                  crossAxisAlignment:CrossAxisAlignment.start,
+                  children:[
+                    Text(
+                      longDate(c.startDate),
+                      style:const TextStyle(fontWeight:FontWeight.w700),
+                    ),
+                    Text(
+                      c.startTime==null
+                          ? 'Start time not recorded'
+                          : 'Started at '+formatStoredTime(c.startTime),
+                      style:const TextStyle(
+                        fontSize:12,
+                        color:AppColors.muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (c != state.cycles.last)
+                Padding(
+                  padding:const EdgeInsets.only(left:10),
+                  child:Container(
+                    padding:const EdgeInsets.only(left:10),
+                    decoration:const BoxDecoration(
+                      border:Border(
+                        left:BorderSide(
+                          color:AppColors.rose,
+                          width:1.2,
+                        ),
+                      ),
+                    ),
+                    child:Column(
+                      crossAxisAlignment:CrossAxisAlignment.start,
+                      children:[
+                        const Text(
+                          'CYCLE',
+                          style:TextStyle(
+                            fontSize:8,
+                            letterSpacing:1.2,
+                            color:AppColors.muted,
+                            fontWeight:FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height:2),
+                        Text(
+                          dayDiff(
+                            c.startDate,
+                            state.cycles[state.cycles.indexOf(c)-1].startDate,
+                          ).toString()+' days',
+                          style:const TextStyle(
+                            fontSize:10,
+                            fontWeight:FontWeight.w800,
+                            color:AppColors.ink,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ]),
           ),
         )),
@@ -1292,9 +1417,97 @@ Future<void> showPeriodDialog(BuildContext context,AppState state) async {
   final timeText=time==null?null:time!.hour.toString().padLeft(2,'0')+':'+time!.minute.toString().padLeft(2,'0');
   try{
     await state.addCycle(keyOf(date),timeText,end==null?null:keyOf(end!));
-    if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Cycle saved to shared history.')));
+    if(context.mounted) {
+      await showDialog<void>(
+        context:context,
+        barrierColor:Colors.black.withValues(alpha:.28),
+        builder:(dialog)=>Dialog(
+          backgroundColor:Colors.transparent,
+          insetPadding:const EdgeInsets.symmetric(horizontal:32),
+          child:Container(
+            padding:const EdgeInsets.fromLTRB(24,26,24,20),
+            decoration:BoxDecoration(
+              color:Theme.of(dialog).cardColor,
+              borderRadius:BorderRadius.circular(28),
+              border:Border.all(color:AppColors.rose.withValues(alpha:.16)),
+              boxShadow:[
+                BoxShadow(
+                  color:AppColors.rose.withValues(alpha:.12),
+                  blurRadius:30,
+                  offset:const Offset(0,14),
+                ),
+              ],
+            ),
+            child:Column(
+              mainAxisSize:MainAxisSize.min,
+              children:[
+                Container(
+                  width:58,
+                  height:58,
+                  decoration:const BoxDecoration(
+                    color:AppColors.roseSoft,
+                    shape:BoxShape.circle,
+                  ),
+                  child:const Icon(
+                    Icons.favorite_rounded,
+                    color:AppColors.rose,
+                    size:25,
+                  ),
+                ),
+                const SizedBox(height:18),
+                const Text(
+                  'Take care, thangame!!',
+                  textAlign:TextAlign.center,
+                  style:TextStyle(
+                    fontSize:20,
+                    fontWeight:FontWeight.w700,
+                    color:AppColors.ink,
+                    letterSpacing:-.4,
+                  ),
+                ),
+                const SizedBox(height:8),
+                const Text(
+                  'Soon I will stop this cycle.',
+                  textAlign:TextAlign.center,
+                  style:TextStyle(
+                    fontSize:12,
+                    color:AppColors.muted,
+                    height:1.55,
+                  ),
+                ),
+                const SizedBox(height:20),
+                FilledButton(
+                  onPressed:()=>Navigator.pop(dialog),
+                  style:FilledButton.styleFrom(
+                    backgroundColor:AppColors.rose,
+                    foregroundColor:Colors.white,
+                    elevation:0,
+                    padding:const EdgeInsets.symmetric(
+                      horizontal:24,
+                      vertical:12,
+                    ),
+                    shape:RoundedRectangleBorder(
+                      borderRadius:BorderRadius.circular(12),
+                    ),
+                  ),
+                  child:const Text(
+                    'Okay, thangame ♡',
+                    style:TextStyle(
+                      fontSize:11,
+                      fontWeight:FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
   }catch(e){
-    if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text('Could not save: '+e.toString())));
+    if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content:Text('Could not save: '+e.toString())),
+    );
   }
 }
 
