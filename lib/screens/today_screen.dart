@@ -69,7 +69,6 @@ class TodayScreen extends StatelessWidget {
   Widget _meta(String a,String b)=>SoftCard(padding:const EdgeInsets.symmetric(horizontal:14,vertical:11),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:const TextStyle(fontSize:8,color:AppColors.lightMuted)),const SizedBox(height:4),Text(b,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700))]));
   Widget _alert()=>Container(padding:const EdgeInsets.all(20),decoration:BoxDecoration(color:const Color(0xFFFFF1F2),border:Border.all(color:const Color(0xFFE9C7CB)),borderRadius:BorderRadius.circular(22)),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('⚠️',style:TextStyle(fontSize:24)),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Kicker('Cycle awareness'),const SizedBox(height:7),const Text('Higher pregnancy possibility',style:TextStyle(fontSize:20,fontWeight:FontWeight.w600)),const SizedBox(height:7),Text('You are around cycle day $currentDay, which falls within the estimated fertile window based on your logged cycles. Calendar estimates cannot confirm ovulation or rule out pregnancy.',style:const TextStyle(fontSize:10,height:1.8)),const SizedBox(height:9),const Text('For pregnancy prevention, do not rely on calendar predictions alone. Consider a reliable contraceptive method.',style:TextStyle(fontSize:9,color:AppColors.lightMuted,fontStyle:FontStyle.italic))]))]));
   Widget _recent()=>Column(crossAxisAlignment:CrossAxisAlignment.start,children:[SectionHeading(kicker:'Recent cycles',title:'A record that grows with you.',action:'View all',onAction:onHistory),if(cycles.isEmpty)const SoftCard(child:Text('No cycle history yet. Add the first period to start building your history.',style:TextStyle(fontSize:10,color:AppColors.lightMuted))) else SoftCard(padding:EdgeInsets.zero,child:Column(children:cycles.take(3).toList().asMap().entries.map((e){final i=e.key,cy=e.value;final len=i+1<cycles.length?days(d(cycles[i+1].periodStart),d(cy.periodStart)):null;return ListTile(contentPadding:const EdgeInsets.symmetric(horizontal:18,vertical:5),leading:CircleAvatar(backgroundColor:AppColors.roseSoft,foregroundColor:AppColors.rose,child:Text('${d(cy.periodStart).day}')),title:Text(DateFormat('d MMM yyyy','en_IN').format(d(cy.periodStart)),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700)),subtitle:Text(cy.periodEnd==null?'Currently logged':'Ended ${DateFormat('d MMM yyyy','en_IN').format(d(cy.periodEnd!))}',style:const TextStyle(fontSize:9)),trailing:Text(len==null?'Current':'$len d',style:const TextStyle(fontSize:10,fontWeight:FontWeight.w700,color:AppColors.rose)));}).toList()))]);
-}
   Widget _stats(PeriodCycle? latest) {
     final items = [
       ('Latest period', latest == null ? 'Not logged' : DateFormat('d MMM yyyy', 'en_IN').format(d(latest.periodStart))),
@@ -92,3 +91,66 @@ class TodayScreen extends StatelessWidget {
       )).toList(),
     );
   }
+
+  Widget _checkIn() {
+    const moods = ['😊 Good', '🙂 Okay', '😌 Calm', '😴 Tired', '🥺 Low'];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeading(
+          kicker: 'A little check-in',
+          title: 'How are you feeling today?',
+        ),
+        SoftCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Your mood',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: moods.map((value) {
+                  final selected = mood == value;
+                  return ChoiceChip(
+                    label: Text(value),
+                    selected: selected,
+                    onSelected: (_) => onMood(value),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Anything you notice?',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  'Cramps',
+                  'Headache',
+                  'Bloating',
+                  'Tenderness',
+                  'Backache',
+                  'Fatigue',
+                ].map((value) {
+                  final selected = symptoms.contains(value);
+                  return FilterChip(
+                    label: Text(value),
+                    selected: selected,
+                    onSelected: (_) => onSymptom(value),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
