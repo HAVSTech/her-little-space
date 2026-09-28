@@ -22,12 +22,73 @@ class TodayScreen extends StatelessWidget {
   }
   Widget _hero(BuildContext c,PeriodCycle? latest,DateTime? next){
     final copy=Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Kicker('Good evening, Harini'),const SizedBox(height:12),Text('Your body has a rhythm.\nLet’s move with it.',style:TextStyle(fontSize:42,height:.98,fontWeight:FontWeight.w500,letterSpacing:-2.5)),const SizedBox(height:15),const Text('A soft little space to notice your cycle, check in with yourself, and keep the everyday things that matter close.',style:TextStyle(fontSize:11,height:1.7,color:AppColors.lightMuted)),const SizedBox(height:18),latest==null?PrimaryButton(label:'Log your first period',icon:Icons.add,onPressed:onLogPeriod):Wrap(spacing:10,runSpacing:10,children:[_meta('Today',DateFormat('EEEE, d MMMM','en_IN').format(now)),_meta('Next period · estimated',DateFormat('d MMM yyyy','en_IN').format(next!))])]);
-    final card=SoftCard(padding:const EdgeInsets.all(28),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Row(children:[const Expanded(child:Text('Your current rhythm',style:TextStyle(fontSize:11,fontWeight:FontWeight.w700))),if(latest!=null)Container(padding:const EdgeInsets.symmetric(horizontal:9,vertical:6),decoration:BoxDecoration(color:AppColors.roseSoft,borderRadius:BorderRadius.circular(30)),child:Text('${phaseIcon(currentDay)} ${phase(currentDay)}',style:const TextStyle(fontSize:9,color:AppColors.rose,fontWeight:FontWeight.w700)))]),const SizedBox(height:22),if(latest==null)Column(children:[const Text('🌷',style:TextStyle(fontSize:45)),const SizedBox(height:8),const Text('Your cycle starts here.',style:TextStyle(fontSize:17,fontWeight:FontWeight.w700)),const SizedBox(height:6),const Text('Log the first day of your period to begin tracking.',style:TextStyle(fontSize:10,color:AppColors.lightMuted),textAlign:TextAlign.center),const SizedBox(height:15),OutlinedButton(onPressed:onLogPeriod,child:const Text('Add period'))]) else Column(children:[Center(child:SizedBox(width:190,height:190,child:Stack(alignment:Alignment.center,children:[SizedBox(width:190,height:190,child:CircularProgressIndicator(value:(currentDay/cycleLength).clamp(0,1),strokeWidth:12,backgroundColor:Theme.of(c).dividerColor,color:AppColors.rose)),Column(mainAxisSize:MainAxisSize.min,children:[Text('$currentDay',style:const TextStyle(fontSize:46,fontWeight:FontWeight.w500,color:AppColors.rose)),const Text('cycle day',style:TextStyle(fontSize:9,color:AppColors.lightMuted))])]))),const SizedBox(height:22),Text('${phaseIcon(currentDay)} ${phase(currentDay)}',style:const TextStyle(color:AppColors.rose,fontSize:13,fontWeight:FontWeight.w700)),const SizedBox(height:7),Text(phaseNote(currentDay),style:const TextStyle(fontSize:10,color:AppColors.lightMuted,height:1.6))])])]);
+    final card = SoftCard(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            const Expanded(child: Text('Your current rhythm', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
+            if (latest != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                decoration: BoxDecoration(color: AppColors.roseSoft, borderRadius: BorderRadius.circular(30)),
+                child: Text('${phaseIcon(currentDay)} ${phase(currentDay)}', style: const TextStyle(fontSize: 9, color: AppColors.rose, fontWeight: FontWeight.w700)),
+              ),
+          ]),
+          const SizedBox(height: 22),
+          if (latest == null)
+            Column(children: [
+              const Text('🌷', style: TextStyle(fontSize: 45)),
+              const SizedBox(height: 8),
+              const Text('Your cycle starts here.', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              const Text('Log the first day of your period to begin tracking.', style: TextStyle(fontSize: 10, color: AppColors.lightMuted), textAlign: TextAlign.center),
+              const SizedBox(height: 15),
+              OutlinedButton(onPressed: onLogPeriod, child: const Text('Add period')),
+            ])
+          else
+            Column(children: [
+              Center(child: SizedBox(width: 190, height: 190, child: Stack(alignment: Alignment.center, children: [
+                SizedBox(width: 190, height: 190, child: CircularProgressIndicator(value: (currentDay / cycleLength).clamp(0, 1), strokeWidth: 12, backgroundColor: Theme.of(c).dividerColor, color: AppColors.rose)),
+                Column(mainAxisSize: MainAxisSize.min, children: [
+                  Text('$currentDay', style: const TextStyle(fontSize: 46, fontWeight: FontWeight.w500, color: AppColors.rose)),
+                  const Text('cycle day', style: TextStyle(fontSize: 9, color: AppColors.lightMuted)),
+                ]),
+              ]))),
+              const SizedBox(height: 22),
+              Text('${phaseIcon(currentDay)} ${phase(currentDay)}', style: const TextStyle(color: AppColors.rose, fontSize: 13, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 7),
+              Text(phaseNote(currentDay), style: const TextStyle(fontSize: 10, color: AppColors.lightMuted, height: 1.6)),
+            ]),
+        ],
+      ),
+    );
     return LayoutBuilder(builder:(context,box)=>box.maxWidth>900?Row(children:[Expanded(child:copy),const SizedBox(width:42),Expanded(child:card)]):Column(children:[copy,const SizedBox(height:28),card]));
   }
   Widget _meta(String a,String b)=>SoftCard(padding:const EdgeInsets.symmetric(horizontal:14,vertical:11),child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[Text(a,style:const TextStyle(fontSize:8,color:AppColors.lightMuted)),const SizedBox(height:4),Text(b,style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700))]));
   Widget _alert()=>Container(padding:const EdgeInsets.all(20),decoration:BoxDecoration(color:const Color(0xFFFFF1F2),border:Border.all(color:const Color(0xFFE9C7CB)),borderRadius:BorderRadius.circular(22)),child:Row(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('⚠️',style:TextStyle(fontSize:24)),const SizedBox(width:12),Expanded(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Kicker('Cycle awareness'),const SizedBox(height:7),const Text('Higher pregnancy possibility',style:TextStyle(fontSize:20,fontWeight:FontWeight.w600)),const SizedBox(height:7),Text('You are around cycle day $currentDay, which falls within the estimated fertile window based on your logged cycles. Calendar estimates cannot confirm ovulation or rule out pregnancy.',style:const TextStyle(fontSize:10,height:1.8)),const SizedBox(height:9),const Text('For pregnancy prevention, do not rely on calendar predictions alone. Consider a reliable contraceptive method.',style:TextStyle(fontSize:9,color:AppColors.lightMuted,fontStyle:FontStyle.italic))]))]));
-  Widget _checkIn()=>Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SectionHeading(kicker:'Daily check-in',title:'How are you feeling today?'),SoftCard(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Mood',style:TextStyle(fontSize:10,fontWeight:FontWeight.w700)),const SizedBox(height:12),Wrap(spacing:7,children:['😊','🥰','😌','😴','🥺','😤','🤍'].map((m)=>InkWell(onTap:()=>onMood(m),child:AnimatedContainer(duration:const Duration(milliseconds:180),width:40,height:40,alignment:Alignment.center,decoration:BoxDecoration(color:mood==m?AppColors.roseSoft:Colors.transparent,borderRadius:BorderRadius.circular(13)),child:Text(m,style:const TextStyle(fontSize:22))))).toList()),const SizedBox(height:16),const Text('Anything to note?',style:TextStyle(fontSize:10,fontWeight:FontWeight.w700)),const SizedBox(height:10),Wrap(spacing:7,children:['Cramps','Bloating','Headache','Backache','Fatigue','Tenderness'].map((s)=>FilterChip(label:Text(s,style:const TextStyle(fontSize:9)),selected:symptoms.contains(s),selectedColor:AppColors.roseSoft,onSelected:(_)=>onSymptom(s))).toList())]))]);
-  Widget _checkIn()=>Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const SectionHeading(kicker:'Daily check-in',title:'How are you feeling today?'),SoftCard(child:Column(crossAxisAlignment:CrossAxisAlignment.start,children:[const Text('Mood',style:TextStyle(fontSize:10,fontWeight:FontWeight.w700)),const SizedBox(height:12),Wrap(spacing:7,children:['😊','🥰','😌','😴','🥺','😤','🤍'].map((m)=>InkWell(onTap:()=>onMood(m),child:AnimatedContainer(duration:const Duration(milliseconds:180),width:40,height:40,alignment:Alignment.center,decoration:BoxDecoration(color:mood==m?AppColors.roseSoft:Colors.transparent,borderRadius:BorderRadius.circular(13)),child:Text(m,style:const TextStyle(fontSize:22))))).toList()),const SizedBox(height:16),const Text('Anything to note?',style:TextStyle(fontSize:10,fontWeight:FontWeight.w700)),const SizedBox(height:10),Wrap(spacing:7,children:['Cramps','Bloating','Headache','Backache','Fatigue','Tenderness'].map((s)=>FilterChip(label:Text(s,style:const TextStyle(fontSize:9)),selected:symptoms.contains(s),selectedColor:AppColors.roseSoft,onSelected:(_)=>onSymptom(s))).toList())]))]);
   Widget _recent()=>Column(crossAxisAlignment:CrossAxisAlignment.start,children:[SectionHeading(kicker:'Recent cycles',title:'A record that grows with you.',action:'View all',onAction:onHistory),if(cycles.isEmpty)const SoftCard(child:Text('No cycle history yet. Add the first period to start building your history.',style:TextStyle(fontSize:10,color:AppColors.lightMuted))) else SoftCard(padding:EdgeInsets.zero,child:Column(children:cycles.take(3).toList().asMap().entries.map((e){final i=e.key,cy=e.value;final len=i+1<cycles.length?days(d(cycles[i+1].periodStart),d(cy.periodStart)):null;return ListTile(contentPadding:const EdgeInsets.symmetric(horizontal:18,vertical:5),leading:CircleAvatar(backgroundColor:AppColors.roseSoft,foregroundColor:AppColors.rose,child:Text('${d(cy.periodStart).day}')),title:Text(DateFormat('d MMM yyyy','en_IN').format(d(cy.periodStart)),style:const TextStyle(fontSize:11,fontWeight:FontWeight.w700)),subtitle:Text(cy.periodEnd==null?'Currently logged':'Ended ${DateFormat('d MMM yyyy','en_IN').format(d(cy.periodEnd!))}',style:const TextStyle(fontSize:9)),trailing:Text(len==null?'Current':'$len d',style:const TextStyle(fontSize:10,fontWeight:FontWeight.w700,color:AppColors.rose)));}).toList()))]);
 }
+  Widget _stats(PeriodCycle? latest) {
+    final items = [
+      ('Latest period', latest == null ? 'Not logged' : DateFormat('d MMM yyyy', 'en_IN').format(d(latest.periodStart))),
+      ('Mood', mood),
+      ('Average cycle', '$averageLength days'),
+    ];
+    return Row(
+      children: items.map((item) => Expanded(
+        child: Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: SoftCard(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(item.$1, style: const TextStyle(fontSize: 8, color: AppColors.lightMuted)),
+              const SizedBox(height: 4),
+              Text(item.$2, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+            ]),
+          ),
+        ),
+      )).toList(),
+    );
+  }
