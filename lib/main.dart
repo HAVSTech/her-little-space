@@ -494,7 +494,7 @@ class ChartPainter extends CustomPainter {
     final range=(max-min).abs()<1?1:max-min;
     final left=8.0,right=size.width-8,top=18.0,bottom=size.height-24;
     final grid=Paint()..color=AppColors.line..strokeWidth=1;
-    for(var i=0;i<3;i++){final y=top+(bottom-top)*i/2;canvas.drawLine(0,y,size.width,y,grid);}
+    for(var i=0;i<3;i++){final y=top+(bottom-top)*i/2;canvas.drawLine(Offset(0,y),Offset(size.width,y),grid);}
     final line=Paint()..color=AppColors.rose..strokeWidth=2.5..style=PaintingStyle.stroke;
     final dots=Paint()..color=AppColors.rose;
     final path=Path();
@@ -505,7 +505,7 @@ class ChartPainter extends CustomPainter {
       canvas.drawCircle(Offset(x,y),4,dots);
     }
     canvas.drawPath(path,line);
-    final tp=TextPainter(text:TextSpan(text:values.last.toInt().toString()+' days',style:const TextStyle(fontSize:11,color:AppColors.muted)),textDirection:TextDirection.ltr)..layout();
+    final tp=TextPainter(text:TextSpan(text:'last ${values.last.toInt()} days',style:const TextStyle(fontSize:11,color:AppColors.muted)),textDirection:TextDirection.ltr)..layout();
     tp.paint(canvas,Offset(left,size.height-16));
   }
   @override bool shouldRepaint(covariant ChartPainter oldDelegate)=>oldDelegate.values!=values;
