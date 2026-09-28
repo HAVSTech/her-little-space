@@ -20,4 +20,9 @@ class PeriodCycle {
 
   DateTime get startDate => DateTime.parse(start);
   DateTime? get endDate => end == null ? null : DateTime.tryParse(end!);
+
+  // Compatibility aliases used by the screen widgets.
+  String get periodStart => start;
+  String? get periodStartTime => startTime;
+  String? get periodEnd => end;
 }
