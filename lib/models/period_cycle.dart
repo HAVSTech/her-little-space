@@ -1,13 +1,23 @@
 class PeriodCycle {
   final String id;
-  final String periodStart;
-  final String? periodStartTime;
-  final String? periodEnd;
-  const PeriodCycle({required this.id, required this.periodStart, this.periodStartTime, this.periodEnd});
+  final String start;
+  final String? startTime;
+  final String? end;
+
+  const PeriodCycle({
+    required this.id,
+    required this.start,
+    this.startTime,
+    this.end,
+  });
+
   factory PeriodCycle.fromMap(Map<String, dynamic> map) => PeriodCycle(
-    id: map['id'] as String,
-    periodStart: map['period_start'] as String,
-    periodStartTime: map['period_start_time'] as String?,
-    periodEnd: map['period_end'] as String?,
+    id: map['id'].toString(),
+    start: map['period_start'].toString(),
+    startTime: map['period_start_time']?.toString(),
+    end: map['period_end']?.toString(),
   );
+
+  DateTime get startDate => DateTime.parse(start);
+  DateTime? get endDate => end == null ? null : DateTime.tryParse(end!);
 }
