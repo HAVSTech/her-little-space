@@ -164,32 +164,139 @@ class _AppState extends State<App> {
 class HomeShell extends StatefulWidget {
   final AppState state;
   const HomeShell({super.key, required this.state});
-  @override State<HomeShell> createState() => _HomeShellState();
+
+  @override
+  State<HomeShell> createState() => _HomeShellState();
 }
 
 class _HomeShellState extends State<HomeShell> {
   int index = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       body: SafeArea(
+        bottom: false,
         child: IndexedStack(
           index: index,
           children: [
-            TodayPage(state: widget.state, openHistory: () => setState(() => index = 1)),
+            TodayPage(
+              state: widget.state,
+              openHistory: () => setState(() => index = 1),
+            ),
             HistoryPage(state: widget.state),
             UsPage(state: widget.state),
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => setState(() => index = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.wb_sunny_outlined), selectedIcon: Icon(Icons.wb_sunny), label: 'Today'),
-          NavigationDestination(icon: Icon(Icons.calendar_month_outlined), selectedIcon: Icon(Icons.calendar_month), label: 'History'),
-          NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite), label: 'Us'),
-        ],
+      bottomNavigationBar: _FloatingBottomNav(
+        index: index,
+        onChanged: (value) => setState(() => index = value),
+      ),
+    );
+  }
+}
+
+class _FloatingBottomNav extends StatelessWidget {
+  final int index;
+  final ValueChanged<int> onChanged;
+
+  const _FloatingBottomNav({
+    required this.index,
+    required this.onChanged,
+  });
+
+  static const items = [
+    (Icons.wb_sunny_outlined, Icons.wb_sunny, 'Today'),
+    (Icons.calendar_month_outlined, Icons.calendar_month, 'History'),
+    (Icons.favorite_border, Icons.favorite, 'Us'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.paddingOf(context).bottom;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(22, 0, 22, bottom + 14),
+      child: Container(
+        height: 66,
+        padding: const EdgeInsets.all(7),
+        decoration: BoxDecoration(
+          color: const Color(0xFF15131A),
+          borderRadius: BorderRadius.circular(34),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: .16),
+              blurRadius: 28,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Row(
+          children: List.generate(items.length, (i) {
+            final selected = index == i;
+            final item = items[i];
+
+            return Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => onChanged(i),
+                child: Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: selected ? 18 : 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: selected ? Colors.white : Colors.transparent,
+                      borderRadius: BorderRadius.circular(26),
+                    ),
+                    child: AnimatedSize(
+                      duration: const Duration(milliseconds: 260),
+                      curve: Curves.easeOutCubic,
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            transitionBuilder: (child, animation) =>
+                                ScaleTransition(
+                              scale: animation,
+                              child: child,
+                            ),
+                            child: Icon(
+                              selected ? item.$2 : item.$1,
+                              key: ValueKey(selected),
+                              size: 19,
+                              color: selected
+                                  ? const Color(0xFF15131A)
+                                  : Colors.white70,
+                            ),
+                          ),
+                          if (selected) ...[
+                            const SizedBox(width: 7),
+                            Text(
+                              item.$3,
+                              style: const TextStyle(
+                                color: Color(0xFF15131A),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
       ),
     );
   }
@@ -419,7 +526,7 @@ class HistoryPage extends StatelessWidget {
         const SizedBox(height:8),
         Text(state.cycles.length.toString()+' logged periods · average '+averageCycle(state.cycles).toString()+' days',style:const TextStyle(color:AppColors.muted)),
         const SizedBox(height:20),
-        if(state.cycles.length>1)HistoryChart(cycles:state.cycles),
+        if(state.cycles.length>1)HistoryChart(state:state),
         const SizedBox(height:18),
         Row(children:[
           Expanded(child:Text('All logged cycles',style:Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight:FontWeight.w700))),
@@ -470,46 +577,292 @@ class HistoryPage extends StatelessWidget {
 }
 
 class HistoryChart extends StatelessWidget {
-  final List<PeriodCycle> cycles;
-  const HistoryChart({super.key,required this.cycles});
+  final AppState state;
+
+  const HistoryChart({super.key, required this.state});
+
   @override
-  Widget build(BuildContext context){
-    final values=<double>[];
-    for(var i=0;i<cycles.length-1;i++) values.add(dayDiff(cycles[i+1].startDate,cycles[i].startDate).toDouble());
+  Widget build(BuildContext context) {
+    final ordered = state.cycles.take(10).toList().reversed.toList();
+    final values = <double>[];
+
+    for (var i = 0; i < ordered.length - 1; i++) {
+      values.add(
+        dayDiff(ordered[i].startDate, ordered[i + 1].startDate).toDouble(),
+      );
+    }
+
+    if (values.isEmpty) return const SizedBox.shrink();
+
+    final average = values.reduce((a, b) => a + b) / values.length;
+
     return Container(
-      height:190,
-      padding:const EdgeInsets.all(16),
-      decoration:BoxDecoration(color:Theme.of(context).cardColor,borderRadius:BorderRadius.circular(24),border:Border.all(color:AppColors.line)),
-      child:CustomPaint(painter:ChartPainter(values),child:const SizedBox.expand()),
+      padding: const EdgeInsets.fromLTRB(18, 20, 18, 16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: AppColors.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Kicker('Visual history'),
+          const SizedBox(height: 7),
+          Text(
+            'Your cycle, month by month.',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -.5,
+                ),
+          ),
+          const SizedBox(height: 5),
+          const Text(
+            'A gentle view of how your cycle length has changed.',
+            style: TextStyle(
+              fontSize: 11,
+              color: AppColors.muted,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 210,
+            child: CustomPaint(
+              painter: CycleChartPainter(
+                values: values,
+                labels: ordered
+                    .take(values.length)
+                    .map((c) => DateFormat('MMM', 'en_IN').format(c.startDate))
+                    .toList(),
+                average: average,
+                lineColor: AppColors.rose,
+                gridColor: AppColors.line,
+                textColor: AppColors.muted,
+              ),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: AppColors.rose,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 7),
+              const Text(
+                'Cycle length',
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+              ),
+              const Spacer(),
+              Text(
+                'Average · ' + average.round().toString() + ' days',
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.muted,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
-class ChartPainter extends CustomPainter {
+class CycleChartPainter extends CustomPainter {
   final List<double> values;
-  ChartPainter(this.values);
+  final List<String> labels;
+  final double average;
+  final Color lineColor;
+  final Color gridColor;
+  final Color textColor;
+
+  CycleChartPainter({
+    required this.values,
+    required this.labels,
+    required this.average,
+    required this.lineColor,
+    required this.gridColor,
+    required this.textColor,
+  });
+
   @override
-  void paint(Canvas canvas,Size size){
-    final min=values.reduce((a,b)=>a<b?a:b);
-    final max=values.reduce((a,b)=>a>b?a:b);
-    final range=(max-min).abs()<1?1:max-min;
-    final left=8.0,right=size.width-8,top=18.0,bottom=size.height-24;
-    final grid=Paint()..color=AppColors.line..strokeWidth=1;
-    for(var i=0;i<3;i++){final y=top+(bottom-top)*i/2;canvas.drawLine(Offset(0,y),Offset(size.width,y),grid);}
-    final line=Paint()..color=AppColors.rose..strokeWidth=2.5..style=PaintingStyle.stroke;
-    final dots=Paint()..color=AppColors.rose;
-    final path=Path();
-    for(var i=0;i<values.length;i++){
-      final x=values.length==1?(left+right)/2:left+(right-left)*i/(values.length-1);
-      final y=bottom-(values[i]-min)/range*(bottom-top);
-      if(i==0)path.moveTo(x,y);else path.lineTo(x,y);
-      canvas.drawCircle(Offset(x,y),4,dots);
+  void paint(Canvas canvas, Size size) {
+    if (values.isEmpty) return;
+
+    const left = 32.0;
+    const right = 10.0;
+    const top = 10.0;
+    const bottom = 32.0;
+
+    final chart = Rect.fromLTRB(
+      left,
+      top,
+      size.width - right,
+      size.height - bottom,
+    );
+
+    var minValue = values.reduce((a, b) => a < b ? a : b);
+    var maxValue = values.reduce((a, b) => a > b ? a : b);
+
+    minValue = minValue.floorToDouble() - 2;
+    maxValue = maxValue.ceilToDouble() + 2;
+
+    if (maxValue - minValue < 6) {
+      final middle = (maxValue + minValue) / 2;
+      minValue = middle - 3;
+      maxValue = middle + 3;
     }
-    canvas.drawPath(path,line);
-    final tp=TextPainter(text:TextSpan(text:'last ${values.last.toInt()} days',style:const TextStyle(fontSize:11,color:AppColors.muted)),textDirection:ui.TextDirection.ltr)..layout();
-    tp.paint(canvas,Offset(left,size.height-16));
+
+    double yFor(double value) {
+      final ratio = (value - minValue) / (maxValue - minValue);
+      return chart.bottom - ratio * chart.height;
+    }
+
+    double xFor(int index) {
+      if (values.length == 1) return chart.center.dx;
+      return chart.left + chart.width * index / (values.length - 1);
+    }
+
+    final gridPaint = Paint()
+      ..color = gridColor.withValues(alpha: .72)
+      ..strokeWidth = 1;
+
+    final labelStyle = TextStyle(
+      fontSize: 9,
+      color: textColor,
+      fontWeight: FontWeight.w500,
+    );
+
+    for (var i = 0; i < 4; i++) {
+      final ratio = i / 3;
+      final y = chart.top + chart.height * ratio;
+      canvas.drawLine(
+        Offset(chart.left, y),
+        Offset(chart.right, y),
+        gridPaint,
+      );
+
+      final value = maxValue - (maxValue - minValue) * ratio;
+      final painter = TextPainter(
+        text: TextSpan(
+          text: value.round().toString(),
+          style: labelStyle,
+        ),
+        textDirection: ui.TextDirection.ltr,
+      )..layout();
+
+      painter.paint(canvas, Offset(0, y - painter.height / 2));
+    }
+
+    final averageY = yFor(average.clamp(minValue, maxValue));
+    final averagePaint = Paint()
+      ..color = lineColor.withValues(alpha: .25)
+      ..strokeWidth = 1.2;
+
+    const dash = 5.0;
+    const gap = 5.0;
+    var x = chart.left;
+    while (x < chart.right) {
+      canvas.drawLine(
+        Offset(x, averageY),
+        Offset((x + dash).clamp(chart.left, chart.right), averageY),
+        averagePaint,
+      );
+      x += dash + gap;
+    }
+
+    final points = List.generate(
+      values.length,
+      (i) => Offset(xFor(i), yFor(values[i])),
+    );
+
+    final fillPath = Path()
+      ..moveTo(points.first.dx, chart.bottom)
+      ..lineTo(points.first.dx, points.first.dy);
+
+    for (var i = 1; i < points.length; i++) {
+      final previous = points[i - 1];
+      final current = points[i];
+      final controlX = (previous.dx + current.dx) / 2;
+      fillPath.cubicTo(
+        controlX,
+        previous.dy,
+        controlX,
+        current.dy,
+        current.dx,
+        current.dy,
+      );
+    }
+
+    fillPath.lineTo(points.last.dx, chart.bottom);
+    fillPath.close();
+
+    final fillPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          lineColor.withValues(alpha: .16),
+          lineColor.withValues(alpha: .015),
+        ],
+      ).createShader(chart);
+
+    canvas.drawPath(fillPath, fillPaint);
+
+    final linePath = Path()..moveTo(points.first.dx, points.first.dy);
+    for (var i = 1; i < points.length; i++) {
+      final previous = points[i - 1];
+      final current = points[i];
+      final controlX = (previous.dx + current.dx) / 2;
+      linePath.cubicTo(
+        controlX,
+        previous.dy,
+        controlX,
+        current.dy,
+        current.dx,
+        current.dy,
+      );
+    }
+
+    final linePaint = Paint()
+      ..color = lineColor
+      ..strokeWidth = 2.8
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    canvas.drawPath(linePath, linePaint);
+
+    for (final point in points) {
+      canvas.drawCircle(point, 5, Paint()..color = Colors.white);
+      canvas.drawCircle(point, 3, Paint()..color = lineColor);
+    }
+
+    for (var i = 0; i < labels.length && i < points.length; i++) {
+      final painter = TextPainter(
+        text: TextSpan(text: labels[i], style: labelStyle),
+        textDirection: ui.TextDirection.ltr,
+      )..layout();
+
+      var labelX = points[i].dx - painter.width / 2;
+      labelX = labelX.clamp(0.0, size.width - painter.width);
+      painter.paint(canvas, Offset(labelX, chart.bottom + 9));
+    }
   }
-  @override bool shouldRepaint(covariant ChartPainter oldDelegate)=>oldDelegate.values!=values;
+
+  @override
+  bool shouldRepaint(covariant CycleChartPainter oldDelegate) {
+    return oldDelegate.values != values ||
+        oldDelegate.average != average ||
+        oldDelegate.labels != labels;
+  }
 }
 
 class UsPage extends StatelessWidget {
