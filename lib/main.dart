@@ -850,7 +850,7 @@ class HistoryPage extends StatelessWidget {
   Future<bool> confirmDelete(BuildContext context) async {
     final result=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(
       title:const Text('Delete this entry?'),
-      content:const Text('This removes the shared cycle record for everyone using this app.'),
+      content:const Text('This removes the cycle record.'),
       actions:[
         TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Cancel')),
         FilledButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Delete')),
