@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -145,7 +146,14 @@ class PeriodNotificationService {
   ];
 
   Future<void> initialize() async {
-    tz.initializeTimeZones();
+    // Local scheduled notifications are for Android/iOS builds. The 19.x
+    // notification plugin does not provide a web implementation, so skip it
+    // on Flutter Web instead of allowing the notification plugin to break app
+    // startup with a LateInitializationError.
+    if (kIsWeb) return;
+
+    try {
+      tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
 
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -180,10 +188,16 @@ class PeriodNotificationService {
           badge: true,
           sound: true,
         );
+    } catch (_) {
+      // Notification setup must never prevent the cycle tracker from loading.
+    }
   }
 
   Future<void> syncWithLatestCycle(List<PeriodCycle> cycles) async {
-    await _plugin.cancelAll();
+    if (kIsWeb) return;
+
+    try {
+      await _plugin.cancelAll();
 
     if (cycles.isEmpty) return;
 
@@ -229,6 +243,10 @@ class PeriodNotificationService {
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         );
       }
+      }
+    } catch (_) {
+      // Notifications are optional; a platform/plugin issue must not surface
+      // as an application error banner.
     }
   }
 
