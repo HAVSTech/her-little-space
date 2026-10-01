@@ -6,6 +6,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'services/supabase_service.dart';
 import 'services/preferences_service.dart';
+import 'services/period_notification_service.dart';
 import 'models/period_cycle.dart';
 import 'theme/app_theme.dart';
 import 'widgets/common.dart';
@@ -61,6 +62,7 @@ String phaseFor(int day, int avg) {
 class AppState extends ChangeNotifier {
   final api = SupabaseService.instance;
   final prefs = PreferencesService();
+  final notifications = PeriodNotificationService.instance;
 
   List<PeriodCycle> cycles = [];
   int intimacyCount = 0;
@@ -78,6 +80,7 @@ class AppState extends ChangeNotifier {
       symptoms = await prefs.loadSymptoms();
       await api.seedIfEmpty();
       await reload();
+      await notifications.syncWithLatestCycle(cycles);
     } catch (e) {
       error = e.toString();
       loading = false;
@@ -105,11 +108,13 @@ class AppState extends ChangeNotifier {
   Future<void> addCycle(String start, String? time, String? end) async {
     await api.addCycle(start: start, time: time, end: end);
     await reload();
+    await notifications.syncWithLatestCycle(cycles);
   }
 
   Future<void> deleteCycle(String id) async {
     await api.deleteCycle(id);
     await reload();
+    await notifications.syncWithLatestCycle(cycles);
   }
 
   Future<void> addMoment() async {
@@ -145,6 +150,7 @@ class AppState extends ChangeNotifier {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('en_IN');
+  await PeriodNotificationService.instance.initialize();
   await Supabase.initialize(
     url: supabaseUrl,
     publishableKey: supabasePublishableKey,
