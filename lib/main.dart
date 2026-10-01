@@ -60,7 +60,9 @@ String phaseFor(int day, int avg) {
 }
 
 class AppState extends ChangeNotifier {
-  final api = SupabaseService.instance;
+  final SupabaseService api;
+
+  AppState({required this.api});
   final prefs = PreferencesService();
   final notifications = PeriodNotificationService.instance;
 
@@ -150,12 +152,12 @@ class AppState extends ChangeNotifier {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('en_IN');
-  await PeriodNotificationService.instance.initialize();
   await Supabase.initialize(
     url: supabaseUrl,
     publishableKey: supabasePublishableKey,
   );
-  final state = AppState();
+  await PeriodNotificationService.instance.initialize();
+  final state = AppState(api: SupabaseService(Supabase.instance.client));
   await state.initialize();
   runApp(App(state: state));
 }
