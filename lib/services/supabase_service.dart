@@ -2,10 +2,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/period_cycle.dart';
 
 class SupabaseService {
-  SupabaseService._();
-  static final instance = SupabaseService._();
+  SupabaseService(this.client);
 
-  SupabaseClient get client => Supabase.instance.client;
+  final SupabaseClient client;
 
   static const historicalCycles = <List<String?>>[
     ['2025-02-19', null], ['2025-03-17', '23:00'], ['2025-04-16', '04:00'],
